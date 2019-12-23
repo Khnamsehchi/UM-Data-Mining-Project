@@ -1,0 +1,49 @@
+# Library
+import pandas as pd
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+import requests
+from bs4 import BeautifulSoup
+import string
+import time
+import re
+import requests
+from bs4 import BeautifulSoup
+from twitterscraper import query_tweets
+import datetime as dt
+import numpy as np
+
+#******************************************************************************
+#Crawling the stock from the star
+#Note: MUST DOWNLOAD WEBDRIVER fIRST 
+
+urlTheStar='https://www.thestar.com.my/business/marketwatch/stock-list/?alphabet='
+alpha = []
+for letter in string.ascii_uppercase:
+    alpha.append(letter)     
+alpha.append('0-9')
+print("!!!  Array of chars")
+print(alpha)
+
+stockname = []
+for i in alpha:
+    print("!!!  Now char "+ i)
+    browser = webdriver.chorome(executable_path=r'C:\Users\khnam\Anaconda3\geckodriver.exe')
+    browser.implicitly_wait(40)
+    browser.get(urlTheStar + i)
+    WebDriverWait(browser,40).until(EC.visibility_of_element_located((By.ID,'marketwatchtable')))
+    innerHTML = browser.find_element_by_id("marketwatchtable").get_attribute("innerHTML")
+    soup = BeautifulSoup(innerHTML, 'lxml') 
+    links = soup.findAll('a')
+    for link in links:
+        splitlink = link['href'].split('=')
+        stock = splitlink[1]
+        stockname.append(stock)
+        print(stock)
+    browser.close()
+
+dict = {'name':stockname}
+df_stockname = pd.DataFrame(dict)
+df_stockname.to_csv('stockname.csv')
